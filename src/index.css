@@ -1,0 +1,33 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+body, html, #root, .App, .images {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  height: 100%;
+}
+#root {}
+.App {}
+.images {}
+.images > div {
+  flex: 1;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+.Controls {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+}
+.Controls .results {
+  background-color: white;
+  /*border: 2px solid grey;*/
+}
+.Controls .results .result-row {
+  border: 1px solid #ccc;
+  padding: 5px;
+}
