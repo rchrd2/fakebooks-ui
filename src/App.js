@@ -8,7 +8,7 @@ const realvocal_data = require("./data/fakebook_the-real-vocal-book.json");
  * https://archive.org/download/fakebook_the-real-vocal-book/page/leaf0_w640.jpg
  */
 function toImageUrl(id, leafNum) {
-  return "https://archive.org/download/"+id+"/page/leaf"+leafNum+"_w640.jpg"
+  return "https://archive.org/download/"+id+"/page/leaf"+leafNum+"_w1000.jpg"
 }
 
 /**
@@ -174,24 +174,26 @@ class App extends Component {
     </div>;
   }
   renderControls() {
-    var currSongTitle, closeEl;
+    var controlEls;
     if (this.state.currIdx !== null) {
-      currSongTitle = this.state.mappings[this.state.currIdx].title;
+      var currSongTitle = this.state.mappings[this.state.currIdx].title;
       // closeEl = (<Link to={'/'}>[ X ]</Link>);
-      closeEl = (<button onClick={this.handleClose}> X </button>);
-    }
-
-    var controls = (
-      <div className="Controls">
-        <span>Fakebooks Browser</span>
-        {'  '}
+      controlEls = (<span>
         <button onClick={this.handlePrev}>Prev</button>
         {'  '}
         <button onClick={this.handleNext}>Next</button>
         {'  '}
         {currSongTitle}
         {'  '}
-        {closeEl}
+        <button onClick={this.handleClose}> X </button>
+      </span>);
+    }
+
+    var controls = (
+      <div className="Controls">
+        <span>Fakebooks Browser</span>
+        {'  '}
+        {controlEls}
         <div className="search-wrapper">
           <input type="text" placeholder="Type in a song name" onChange={this.doSearch} value={this.state.searchValue} />
         </div>

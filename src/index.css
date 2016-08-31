@@ -45,6 +45,11 @@ body, html, #root, .App, .images {
   float: right;
   padding-right: 20px;
 }
+.Controls .search-wrapper input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  box-shadow: 2px 2px 2px rgba(200,200,200,0.5);
+}
 
 .toc {
   text-align: center;
