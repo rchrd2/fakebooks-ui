@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router'
 
 const realvocal_data = require("./data/fakebook_the-real-vocal-book.json");
 
@@ -10,26 +11,22 @@ function toImageUrl(id, leafNum) {
   return "https://archive.org/download/"+id+"/page/leaf"+leafNum+"_w640.jpg"
 }
 
-
-// function loadJson(url, complete, onerror) {
-//   var request = new XMLHttpRequest();
-//   request.open('GET', url, true);
-//   request.onload = function() {
-//     if (request.status >= 200 && request.status < 400) {
-//       var data = JSON.parse(request.responseText);
-//       complete(data);
-//     } else { /* We reached our target server, but it returned an error */ }
-//   };
-//   request.onerror = function() {
-//     onerror();
-//   };
-//   request.send();
-// }
+/**
+ * http://stackoverflow.com/a/196991
+ */
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, function(txt){
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}
 
 
 class App extends Component {
-  constructor() {
-    super();
+  static contextTypes = {
+    router: React.PropTypes.object.isRequired
+  };
+  constructor(props) {
+    super(props);
 
     this.doSearch = this.doSearch.bind(this);
     this.loadSong = this.loadSong.bind(this);
@@ -41,22 +38,46 @@ class App extends Component {
       mappings: [],
       matches: [],
       searchValue: '',
-      currIdx: null,
+      currIdx: 0,
     };
 
-    // Load mappings via ajax
-    // loadJson("data/fakebook_the-real-vocal-book.json", (data) => {
-    //   this.setState(this.getStateFromData(data));
-    // });
+    // Update State from index data
     this.state = Object.assign(this.state, this.getStateFromData(realvocal_data));
+
+    // Update State from route
+    this.state = Object.assign(this.state, this.getStateFromProps(props));
   }
+
   getStateFromData(data) {
+    data.forEach(function(row, idx) {
+      row.title = toTitleCase(row.title);
+    });
     return {
       mappings: this.state.mappings.concat(data).sort(function(a, b) {
         return a.title.toLowerCase() > b.title.toLowerCase();
-      }),
-      currIdx: 0,
+      })
     };
+  }
+
+  getStateFromProps(props) {
+    var idx = null;
+    if (props.params.titleSlug) {
+      // search for song by title
+      var needle = props.params.titleSlug.toLowerCase();
+      for (var i = 0; i < this.state.mappings.length; i++) {
+        if (this.state.mappings[i].title.toLowerCase() === needle) {
+          idx = i;
+          break;
+        }
+      }
+    }
+    return {
+      currIdx: idx,
+    };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState(this.getStateFromProps(nextProps));
   }
 
   doSearch(e) {
@@ -69,9 +90,12 @@ class App extends Component {
       searchValue: term,
     })
   }
+  /**
+   * Changes URL and state
+   */
   loadSong(row) {
+    this.context.router.push(row.identifier + '/' + row.title);
     this.setState({
-      /* inefficient lookup :( */
       currIdx: this.state.mappings.indexOf(row),
       matches: [],
       searchValue: '',
@@ -82,19 +106,26 @@ class App extends Component {
     if (currIdx !== null) {
       if (currIdx > 0) {
         this.setState({currIdx: currIdx - 1});
+        currIdx = currIdx - 1;
       } else {
-        this.setState({currIdx: this.state.mappings.length - 1});
+        currIdx = this.state.mappings.length - 1;
       }
+      this.loadSong(this.state.mappings[currIdx]);
+      // var currRow = this.state.mappings[currIdx];
+      // this.context.router.push(currRow.identifier + '/' + currRow.title);
     }
   }
   handleNext() {
     var currIdx = this.state.currIdx;
     if (currIdx !== null) {
       if (currIdx < (this.state.mappings.length - 1)) {
-        this.setState({currIdx: currIdx + 1});
+        currIdx = currIdx + 1;
       } else {
-        this.setState({currIdx: 0});
+        currIdx = 0;
       }
+      this.loadSong(this.state.mappings[currIdx]);
+      // var currRow = this.state.mappings[currIdx];
+      // this.context.router.push(currRow.identifier + '/' + currRow.title);
     }
   }
   render() {
@@ -102,7 +133,7 @@ class App extends Component {
       return (
         <div className="result-row" key={idx} >
           <button onClick={() => {this.loadSong(row)}}>
-            {row.identifier} – {row.title}, {row.composer}
+            {row.identifier} – {row.title}
           </button>
         </div>
       );
@@ -132,7 +163,6 @@ class App extends Component {
         </div>
       </div>
     );
-
     return (
       <div className="App">
         {controls}
