@@ -1,7 +1,9 @@
 body, html {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  font-family: serif;
+  font-size: 18px;
+  line-height: 22px;
 }
 body, html, #root, .App, .images {
   display: flex;
@@ -18,10 +20,18 @@ body, html, #root, .App, .images {
   background-repeat: no-repeat;
   background-position: center center;
 }
+.images.pages2 .page0 {
+  background-position: center right;
+}
+.images.pages2 .page1 {
+  background-position: center left;
+}
 .Controls {
   position: fixed;
-  top: 10px;
-  left: 10px;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  padding: 10px;
 }
 .Controls .results {
   background-color: white;
@@ -30,4 +40,24 @@ body, html, #root, .App, .images {
 .Controls .results .result-row {
   border: 1px solid #ccc;
   padding: 5px;
+}
+.Controls .search-wrapper {
+  float: right;
+  padding-right: 20px;
+}
+
+.toc {
+  text-align: center;
+  width: 100%;
+}
+.toc-row { display: block; margin-bottom: 10px; }
+.toc a { color: black; text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+.toc a .toc-title { font-weight: bold; display:block; }
+.toc a .toc-id { color: grey; font-size: .8em; display: block;}
+.toc-footer {
+  margin: 100px 0 30px 0;
+}
+.toc-no-results {
+  margin: 100px 0 30px 0;
 }

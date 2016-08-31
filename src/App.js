@@ -32,6 +32,7 @@ class App extends Component {
     this.loadSong = this.loadSong.bind(this);
     this.handlePrev = this.handlePrev.bind(this);
     this.handleNext = this.handleNext.bind(this);
+    this.handleClose = this.handleClose.bind(this);
 
     this.state = {
       isLoadingMappings: true,
@@ -73,6 +74,7 @@ class App extends Component {
     }
     return {
       currIdx: idx,
+      searchValue: '' // reset search
     };
   }
 
@@ -111,8 +113,6 @@ class App extends Component {
         currIdx = this.state.mappings.length - 1;
       }
       this.loadSong(this.state.mappings[currIdx]);
-      // var currRow = this.state.mappings[currIdx];
-      // this.context.router.push(currRow.identifier + '/' + currRow.title);
     }
   }
   handleNext() {
@@ -124,28 +124,63 @@ class App extends Component {
         currIdx = 0;
       }
       this.loadSong(this.state.mappings[currIdx]);
-      // var currRow = this.state.mappings[currIdx];
-      // this.context.router.push(currRow.identifier + '/' + currRow.title);
     }
   }
-  render() {
-    var resultEls = this.state.matches.map((row, idx) => {
-      return (
-        <div className="result-row" key={idx} >
-          <button onClick={() => {this.loadSong(row)}}>
-            {row.identifier} – {row.title}
-          </button>
-        </div>
-      );
-    });
-    var currSong, currSongImages, currSongTitle;
-    if (this.state.currIdx !== null) {
-      currSong = this.state.mappings[this.state.currIdx];
-      currSongImages = currSong.leafNums.map((leafNum) => {
-        return <div style={{backgroundImage: 'url(' + toImageUrl(currSong.identifier, leafNum) + ')'}}></div>
-      });
-      currSongTitle = currSong.title;
+  handleClose() {
+    this.context.router.push('/');
+  }
+  renderToc() {
+    var mappings, tocContents;
+    if (this.state.searchValue.length > 0) {
+      mappings = this.state.matches;
+    } else {
+      mappings = this.state.mappings;
     }
+    if (mappings.length > 0) {
+      var letters = {};
+      mappings.forEach(function(row, idx) {
+        var letter = row.title.charAt(0).toUpperCase();
+        if (letters[letter] === undefined) {
+          letters[letter] = [];
+        }
+        letters[letter].push(row);
+      });
+
+      tocContents = Object.keys(letters).sort().map(function(letter) {
+        return (<div>
+          <h1>{letter}</h1>
+          {letters[letter].map(function(row) {
+            return (<div className="toc-row">
+              <Link to={row.identifier + '/' + row.title}>
+                <span className="toc-title">{row.title}</span> <span className="toc-id">{row.identifier}</span>
+              </Link>
+            </div>)
+          })}
+        </div>);
+      });
+    } else {
+      tocContents = (
+        <div className="toc-no-results">No results found for <i>{this.state.searchValue}</i></div>
+      );
+    }
+
+    return <div className="toc">
+      {tocContents}
+      <div className="toc-footer">
+        See: <br/>
+        <a href="https://archive.org/details/fakebooks">https://archive.org/details/fakebooks</a><br/>
+        <a href="https://github.com/rchrd2/fakebooks-ui">https://github.com/rchrd2/fakebooks-ui</a>
+      </div>
+    </div>;
+  }
+  renderControls() {
+    var currSongTitle, closeEl;
+    if (this.state.currIdx !== null) {
+      currSongTitle = this.state.mappings[this.state.currIdx].title;
+      // closeEl = (<Link to={'/'}>[ X ]</Link>);
+      closeEl = (<button onClick={this.handleClose}> X </button>);
+    }
+
     var controls = (
       <div className="Controls">
         <span>Fakebooks Browser</span>
@@ -155,20 +190,43 @@ class App extends Component {
         <button onClick={this.handleNext}>Next</button>
         {'  '}
         {currSongTitle}
-
-        <br/>
-        <input type="text" placeholder="Type in a song name" onChange={this.doSearch} value={this.state.searchValue} />
-        <div className="results" ref="results">
-          {resultEls}
+        {'  '}
+        {closeEl}
+        <div className="search-wrapper">
+          <input type="text" placeholder="Type in a song name" onChange={this.doSearch} value={this.state.searchValue} />
         </div>
       </div>
     );
+    return controls;
+  }
+  render() {
+    var controls = this.renderControls();
+
+    var toc;
+    if (this.state.currIdx === null || this.state.searchValue.length > 0) {
+      toc = this.renderToc();
+    }
+
+    var currSongImages;
+    if (toc === undefined && this.state.currIdx !== null) {
+      var currSong = this.state.mappings[this.state.currIdx];
+      currSongImages = (
+        <div className={"images " + "pages" + String(currSong.leafNums.length)}>
+          {currSong.leafNums.map((leafNum, idx) => {
+            return <div
+              style={{backgroundImage: 'url(' + toImageUrl(currSong.identifier, leafNum) + ')'}}
+              className={"page"+idx}
+              ></div>
+          })}
+        </div>
+      );
+    }
+
     return (
       <div className="App">
         {controls}
-        <div className="images">
-          {currSongImages}
-        </div>
+        {toc}
+        {currSongImages}
       </div>
     );
   }
